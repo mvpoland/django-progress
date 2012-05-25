@@ -64,7 +64,7 @@ def with_progress(collection, name=None):
         ts = datetime.datetime.now()
         if (ts - last_updated).seconds > 5:
             seconds_elapsed = (ts - start_ts).seconds
-            seconds_to_go = seconds_elapsed * float(count - i) / float(i)
+            seconds_to_go = seconds_elapsed * float(count) / float(i+1)
             eta = ts + datetime.timedelta(seconds=seconds_to_go)
             
             progress.eta = eta
