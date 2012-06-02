@@ -32,6 +32,10 @@ class ProgressException(Exception):
         return self.description
 
 
+import threading
+tls = threading.local()
+
+
 def with_progress(collection, name=None):
     '''
     This is a generator for keeping track of the progress of long running tasks.
@@ -47,7 +51,6 @@ def with_progress(collection, name=None):
     progress and an estimated time of arrival/completion. This information is updated
     at a minimum interval of 5 seconds.
     '''
-    
     from djprogress.models import Progress
     
     if not name:
@@ -57,7 +60,21 @@ def with_progress(collection, name=None):
     start_ts = datetime.datetime.now()
     last_updated = start_ts
     
-    progress = Progress.objects.create(name=name, total=count)
+    ### Keep track of parent progresses using threading.local
+    if not hasattr(tls, 'djprogress__stack'):
+        tls.djprogress__stack = []
+    parent_progress = None
+    if tls.djprogress__stack:
+        parent_progresses = Progress.objects.filter(pk=tls.djprogress__stack[-1])
+        while tls.djprogress__stack and not parent_progresses:
+            tls.progress__stack.pop()
+            parent_progresses = Progress.objects.filter(pk=tls.djprogress__stack[-1])
+        if parent_progresses:
+            parent_progress = parent_progresses[0]
+    
+    progress = Progress.objects.create(name=name, total=count, parent=parent_progress)
+    
+    tls.djprogress__stack.append(progress.pk)
     
     for i, item in enumerate(collection):
         yield item
@@ -73,4 +90,6 @@ def with_progress(collection, name=None):
             last_updated = ts
     
     progress.delete()
+    if tls.djprogress__stack:
+        tls.djprogress__stack.pop()
 
