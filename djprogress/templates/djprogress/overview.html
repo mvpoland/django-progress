@@ -45,9 +45,8 @@ $(function(){
             
             {% if progress.parent %}
             <tr>
-                <th scope="row">{% trans "Parent" %}: <span style="font-weight: normal; font-size: 11px;">{{ progress.parent.name }}</span></th>
-                <td></td>
-                <td></td>
+                <th scope="row">{% trans "Parent" %}</th>
+                <td colspan="2">{{ progress.parent.name }}</td>
             </tr>
             {% endif %}
             
