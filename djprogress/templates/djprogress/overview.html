@@ -1,0 +1,66 @@
+{% extends "djprogress/base.html" %}
+{% load i18n %}
+{% load adminmedia %}
+{% block coltype %}colMS{% endblock %}
+{% block bodyclass %}dashboard{% endblock %}
+{% block content %}
+
+<h1>{% trans "Overview" %}</h1>
+
+<p>
+    {% blocktrans %}This page automatically refreshes every 5 seconds.{% endblocktrans %}
+</p>
+
+<div id="content-main">
+    {% for progress in progresses %}
+    <div class="module">
+        <table>
+            
+            <caption><span class="section">{{ progress.name }}</span></caption>
+            
+            {% if progress.parent %}
+            <tr>
+                <th scope="row">{% trans "Parent" %}</th>
+                <td>{{ progress.parent.name }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            
+            <tr>
+                <th scope="row">{% trans "Last updated" %}</th>
+                <td></td>
+                <td>{{ progress.last_updated|time:"H:i:s" }}</td>
+            </tr>
+            
+            <tr>
+                <th scope="row">{% trans "Estimated time of completion" %}</th>
+                <td></td>
+                <td><strong>{{ progress.eta|time:"H:i:s" }}</strong></td>
+            </tr>
+            
+            <tr>
+                <th scope="row">{% trans "Progress" %}</th>
+                <td><strong>{{ progress.current }} / {{ progress.total }}</strong></td>
+                <td>
+                    <div style="width: 64px; border: 1px solid #CCC; margin: 0; padding: 0;">
+                         <div style="margin: 0; padding: 0; width: {% widthratio progress.current progress.total 64 %}px; height: 12px; background: #ACE url({% admin_media_prefix %}img/admin/default-bg.gif) repeat-x;"></div>
+                    </div>
+                </td>
+            </tr>
+            
+            {% comment %}
+            <tr>
+                <td>{% trans "Total" %}:</td>
+                <td>{{ model.stats.0 }}%</td>
+                <td>
+                    <div style="width: 256px; border: 1px solid #CCC; margin: 0; padding: 0;">
+                         <div style="margin: 0; padding: 0; width: {% widthratio model.stats.0 100 256 %}px; height: 12px; background: #ACE url({% admin_media_prefix %}img/admin/default-bg.gif) repeat-x;"></div>
+                    </div>
+                </td>
+            </tr>
+            {% endcomment %}
+        </table>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
