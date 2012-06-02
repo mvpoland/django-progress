@@ -45,8 +45,8 @@ $(function(){
             
             {% if progress.parent %}
             <tr>
-                <th scope="row">{% trans "Parent" %}</th>
-                <td>{{ progress.parent.name }}</td>
+                <th scope="row">{% trans "Parent" %}: <span style="font-weight: normal; font-size: 11px;">{{ progress.parent.name }}</span></th>
+                <td></td>
                 <td></td>
             </tr>
             {% endif %}
@@ -54,13 +54,25 @@ $(function(){
             <tr>
                 <th scope="row">{% trans "Last updated" %}</th>
                 <td></td>
-                <td>{{ progress.last_updated|timesince }} {% trans "ago" %}</td>
+                <td>
+                    {% if progress.is_just_now_updated %}
+                        {% trans "just now" %}
+                    {% else %}
+                        {{ progress.last_updated|timesince }} {% trans "ago" %}
+                    {% endif %}
+                </td>
             </tr>
             
             <tr>
                 <th scope="row">{% trans "Est. time remaining" %}</th>
                 <td></td>
-                <td><strong>{{ progress.eta|timeuntil }}</strong></td>
+                <td>
+                    {% if progress.eta %}
+                        <strong>{{ progress.eta|timeuntil }}</strong>
+                    {% else %}
+                        {% trans "calculating" %}...
+                    {% endif %}
+                </td>
             </tr>
             
             <tr>

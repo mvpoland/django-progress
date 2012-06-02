@@ -1,5 +1,6 @@
 from django.db import models
 
+import datetime
 
 class Progress(models.Model):
     name = models.CharField(max_length=64, db_index=True)
@@ -15,4 +16,7 @@ class Progress(models.Model):
 
     def __unicode__(self):
         return u'%s: %d/%d' % (self.name, self.current, self.total)
+    
+    def is_just_now_updated(self):
+        return (datetime.datetime.now() - self.last_updated).seconds < 7
 
