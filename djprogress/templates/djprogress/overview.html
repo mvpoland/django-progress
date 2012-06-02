@@ -3,11 +3,36 @@
 {% load adminmedia %}
 {% block coltype %}colMS{% endblock %}
 {% block bodyclass %}dashboard{% endblock %}
+
+{% block footer %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+<script>
+$(function(){
+    var update_content = function(){
+        $.ajax({
+            'type': 'GET',
+            'url': '.',
+            'success': function(x) {
+                var response_markup = $(x);
+                var content = response_markup.find('#content-main');
+                $('#content-main').html(content.html());
+                setTimeout(update_content, 5000);
+            },
+            'error': function(x) {
+                $('#refresh-notice').html('The connection was interrupted. Please refresh this page manually.');
+            }
+        });
+    }
+    setTimeout(update_content, 5000);
+});
+</script>
+{% endblock %}
+
 {% block content %}
 
 <h1>{% trans "Overview" %}</h1>
 
-<p>
+<p id="refresh-notice">
     {% blocktrans %}This page automatically refreshes every 5 seconds.{% endblocktrans %}
 </p>
 
@@ -29,13 +54,13 @@
             <tr>
                 <th scope="row">{% trans "Last updated" %}</th>
                 <td></td>
-                <td>{{ progress.last_updated|time:"H:i:s" }}</td>
+                <td>{{ progress.last_updated|timesince }} {% trans "ago" %}</td>
             </tr>
             
             <tr>
-                <th scope="row">{% trans "Estimated time of completion" %}</th>
+                <th scope="row">{% trans "Est. time remaining" %}</th>
                 <td></td>
-                <td><strong>{{ progress.eta|time:"H:i:s" }}</strong></td>
+                <td><strong>{{ progress.eta|timeuntil }}</strong></td>
             </tr>
             
             <tr>
