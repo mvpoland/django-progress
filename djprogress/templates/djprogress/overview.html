@@ -52,7 +52,7 @@ $(function(){
             
             <tr>
                 <th scope="row">{% trans "Last updated" %}</th>
-                <td></td>
+                <td>{{ progress.last_updated|time:"H:i:s" }}</td>
                 <td>
                     {% if progress.is_just_now_updated %}
                         {% trans "just now" %}
@@ -64,7 +64,7 @@ $(function(){
             
             <tr>
                 <th scope="row">{% trans "Est. time remaining" %}</th>
-                <td></td>
+                <td>{{ progress.eta|time:"H:i:s" }}</td>
                 <td>
                     {% if progress.eta %}
                         <strong>{{ progress.eta|timeuntil }}</strong>
