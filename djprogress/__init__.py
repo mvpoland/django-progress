@@ -76,20 +76,21 @@ def with_progress(collection, name=None):
     
     tls.djprogress__stack.append(progress.pk)
     
-    for i, item in enumerate(collection):
-        yield item
-        ts = datetime.datetime.now()
-        if (ts - last_updated).seconds > 5:
-            seconds_elapsed = (ts - start_ts).seconds
-            seconds_to_go = seconds_elapsed * float(count) / float(i+1)
-            eta = ts + datetime.timedelta(seconds=seconds_to_go)
-            
-            progress.eta = eta
-            progress.current = i + 1
-            progress.save()
-            last_updated = ts
-    
-    progress.delete()
-    if tls.djprogress__stack:
-        tls.djprogress__stack.pop()
+    try:
+        for i, item in enumerate(collection):
+            yield item
+            ts = datetime.datetime.now()
+            if (ts - last_updated).seconds > 5:
+                seconds_elapsed = (ts - start_ts).seconds
+                seconds_to_go = seconds_elapsed * float(count) / float(i+1)
+                eta = ts + datetime.timedelta(seconds=seconds_to_go)
+                
+                progress.eta = eta
+                progress.current = i + 1
+                progress.save()
+                last_updated = ts
+    finally:
+        progress.delete()
+        if tls.djprogress__stack:
+            tls.djprogress__stack.pop()
 
