@@ -10,7 +10,7 @@
     var DjangoProgress = angular.module('DjangoProgress', []);
     DjangoProgress.controller('ProgressCtrl', function($scope, $http) {
         $scope.fetch_progress = function() {
-            $http.get('{% url djprogress_api_get %}?name={{ progress_name }}').
+            $http.get('{% url "djprogress_api_get" %}?name={{ progress_name }}').
             success(function(data, status) {
                 $scope.progress = data;
             }).
