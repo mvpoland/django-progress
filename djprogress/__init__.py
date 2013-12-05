@@ -1,6 +1,16 @@
+from contextlib import contextmanager
 import datetime
 import os
 import subprocess
+import sys
+
+try:
+    from django.utils.timezone import now
+except ImportError:
+    from datetime.datetime import now
+
+from django.views.debug import ExceptionReporter
+
 
 def get_git_version():
     git_dir = os.path.abspath(
@@ -57,7 +67,7 @@ def with_progress(collection, name=None):
         raise ProgressException('This with_progress call has no name')
     
     count = len(collection)
-    start_ts = datetime.datetime.now()
+    start_ts = now()
     last_updated = start_ts
     
     ### Keep track of parent progresses using threading.local
@@ -75,22 +85,38 @@ def with_progress(collection, name=None):
     progress = Progress.objects.create(name=name, total=count, parent=parent_progress)
     
     tls.djprogress__stack.append(progress.pk)
-    
-    try:
-        for i, item in enumerate(collection):
-            yield item
-            ts = datetime.datetime.now()
-            if (ts - last_updated).seconds > 5:
-                seconds_elapsed = (ts - start_ts).seconds
-                seconds_to_go = seconds_elapsed * float(count-i) / float(i+1)
-                eta = ts + datetime.timedelta(seconds=seconds_to_go)
-                
-                progress.eta = eta
-                progress.current = i + 1
-                progress.save()
-                last_updated = ts
-    finally:
-        progress.delete()
-        if tls.djprogress__stack:
-            tls.djprogress__stack.pop()
+    for i, item in enumerate(collection):
+        yield item
 
+        ts = now()
+        if (ts - last_updated).seconds > 5:
+            seconds_elapsed = (ts - start_ts).seconds
+            seconds_to_go = seconds_elapsed * float(count-i) / float(i+1)
+            eta = ts + datetime.timedelta(seconds=seconds_to_go)
+
+            progress.eta = eta
+            progress.current = i + 1
+            progress.save()
+            last_updated = ts
+
+    progress.delete()
+    if tls.djprogress__stack:
+        tls.djprogress__stack.pop()
+
+
+@contextmanager
+def progress_error_reporter():
+    try:
+        yield
+    except:
+        if hasattr(tls, 'djprogress__stack'):
+            progress_id = tls.djprogress__stack.pop()
+            from djprogress.models import Progress
+            progress = Progress.objects.get(pk=progress_id)
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            er = ExceptionReporter(None, exc_type, exc_value, exc_traceback)
+            html = er.get_traceback_html()
+            progress.exception = html
+            progress.save()
+        else:
+            raise

@@ -9,6 +9,7 @@ class Progress(models.Model):
     eta = models.DateTimeField(null=True, blank=True)
     last_updated = models.DateTimeField(auto_now=True, db_index=True)
     parent = models.ForeignKey('Progress', blank=True, null=True, related_name='children')
+    exception = models.TextField(blank=True)
     
     class Meta:
         verbose_name = u'progress'

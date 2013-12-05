@@ -40,7 +40,7 @@ $(function(){
     <div class="module">
         <table>
             
-            <caption><span class="section">{{ progress.name }}</span></caption>
+            <caption {% if progress.exception %}style="background: red;"{% endif %}><span class="section">{{ progress.name }}</span></caption>
             
             {% if progress.parent %}
             <tr>
@@ -82,6 +82,13 @@ $(function(){
                     </div>
                 </td>
             </tr>
+            {% if progress.exception %}
+            <tr>
+                <th scope="row">{% trans "Exception" %}</th>
+                <td><a href="{% url 'djprogress_show_exception' progress.pk %}" target="_new">{% trans "Show exception" %}</a></td>
+                <td><a href="{% url 'djprogress_resolve' progress.pk %}">{% trans "Mark as resolved" %}</a></td>
+            </tr>
+            {% endif %}
             
             {% comment %}
             <tr>
