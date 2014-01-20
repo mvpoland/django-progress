@@ -47,7 +47,7 @@ tls = threading.local()
 
 
 def with_progress(collection, name=None):
-    '''
+    """
     This is a generator for keeping track of the progress of long running tasks.
     
     Example:
@@ -60,7 +60,7 @@ def with_progress(collection, name=None):
     In the Django Admin, you can see an overview of all running processes with their
     progress and an estimated time of arrival/completion. This information is updated
     at a minimum interval of 5 seconds.
-    '''
+    """
     from djprogress.models import Progress
     
     if not name:
@@ -106,6 +106,17 @@ def with_progress(collection, name=None):
 
 @contextmanager
 def progress_error_reporter():
+    """
+    Use this wrapper around your progress loops like this:
+
+    >>> with progress_error_reporter():
+    >>>     for item in with_progress(collection, name='my long process that can throw errors')
+    >>>         # heavy processing actions with sometimes an exception :-)
+
+    When an exception gets raised from inside the body of your for-loop, it will be
+    caught and the progress bar will show a link to the exception. The exception is rendered
+    by the standard exception reporter, containing the full stack trace with variables.
+    """
     try:
         yield
     except:

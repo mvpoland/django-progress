@@ -38,6 +38,8 @@ def show_exception(request, progress_id):
 @staff_member_required
 def resolve(request, progress_id):
     progress = get_object_or_404(Progress, pk=progress_id)
+    while progress.parent:
+        progress = progress.parent
     progress.delete()
     messages.success(request, _(u'Marked progress "%s" as resolved.') % progress.name)
     return redirect(reverse('djprogress_overview'))
