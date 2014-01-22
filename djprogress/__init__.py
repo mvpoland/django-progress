@@ -46,7 +46,7 @@ import threading
 tls = threading.local()
 
 
-def with_progress(collection, name=None):
+def with_progress(collection, name=None, count=-1):
     """
     This is a generator for keeping track of the progress of long running tasks.
     
@@ -66,9 +66,10 @@ def with_progress(collection, name=None):
     if not name:
         raise ProgressException('This with_progress call has no name')
     
-    count = len(collection)
+    count = count if count > -1 else len(collection)
     start_ts = now()
     last_updated = start_ts
+    items_since_retarget = 0
     
     ### Keep track of parent progresses using threading.local
     if not hasattr(tls, 'djprogress__stack'):
@@ -89,15 +90,25 @@ def with_progress(collection, name=None):
         yield item
 
         ts = now()
+
+        if i % 1000 == 0:
+            # After each block of 1000 items, retarget the estimation, to
+            # account for mid-term fluctuations.
+            start_ts = ts
+            items_since_retarget = 0
+
         if (ts - last_updated).seconds > 5:
+            # After 5 seconds since last_updated, update the Progress instance
             seconds_elapsed = (ts - start_ts).seconds
-            seconds_to_go = seconds_elapsed * float(count-i) / float(i+1)
+            seconds_to_go = seconds_elapsed * float(count-i) / float(items_since_retarget+1)
             eta = ts + datetime.timedelta(seconds=seconds_to_go)
 
             progress.eta = eta
             progress.current = i + 1
             progress.save()
             last_updated = ts
+
+        items_since_retarget = items_since_retarget + 1
 
     progress.delete()
     if tls.djprogress__stack:
