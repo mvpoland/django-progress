@@ -9,7 +9,11 @@ try:
 except ImportError:
     now = datetime.datetime.now
 
-from django.views.debug import ExceptionReporter
+try:
+    from django.views.debug import ExceptionReporter
+except ImportError:
+    # prevent pip install to crash
+    pass
 
 
 def get_git_version():
