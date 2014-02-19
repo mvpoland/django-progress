@@ -3,6 +3,7 @@ import datetime
 import os
 import subprocess
 import sys
+from django.db import transaction
 
 try:
     from django.utils.timezone import now
@@ -136,13 +137,15 @@ def progress_error_reporter():
         yield
     except:
         if hasattr(tls, 'djprogress__stack'):
-            progress_id = tls.djprogress__stack.pop()
-            from djprogress.models import Progress
-            progress = Progress.objects.get(pk=progress_id)
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            er = ExceptionReporter(None, exc_type, exc_value, exc_traceback)
-            html = er.get_traceback_html()
-            progress.exception = html
-            progress.save()
-        else:
-            raise
+            @transaction.autocommit
+            def store_exception():
+                progress_id = tls.djprogress__stack.pop()
+                from djprogress.models import Progress
+                progress = Progress.objects.get(pk=progress_id)
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                er = ExceptionReporter(None, exc_type, exc_value, exc_traceback)
+                html = er.get_traceback_html()
+                progress.exception = html
+                progress.save()
+            store_exception()
+        raise
