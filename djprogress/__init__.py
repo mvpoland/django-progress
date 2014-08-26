@@ -137,7 +137,6 @@ def progress_error_reporter():
     except:
         if hasattr(tls, 'djprogress__stack'):
             from django.db import transaction
-            @transaction.autocommit
             def store_exception():
                 progress_id = tls.djprogress__stack.pop()
                 from djprogress.models import Progress
