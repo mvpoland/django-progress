@@ -4,6 +4,10 @@ import os
 import subprocess
 import sys
 
+from logging import getLogger
+
+logger = getLogger(__name__)
+
 try:
     from django.utils.timezone import now
 except ImportError:
@@ -82,7 +86,7 @@ def with_progress(collection, name=None, count=-1):
     if tls.djprogress__stack:
         parent_progresses = Progress.objects.filter(pk=tls.djprogress__stack[-1])
         while tls.djprogress__stack and not parent_progresses:
-            tls.progress__stack.pop()
+            tls.djprogress__stack.pop()
             parent_progresses = Progress.objects.filter(pk=tls.djprogress__stack[-1])
         if parent_progresses:
             parent_progress = parent_progresses[0]
@@ -140,11 +144,16 @@ def progress_error_reporter():
             def store_exception():
                 progress_id = tls.djprogress__stack.pop()
                 from djprogress.models import Progress
-                progress = Progress.objects.get(pk=progress_id)
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                er = ExceptionReporter(None, exc_type, exc_value, exc_traceback)
-                html = er.get_traceback_html()
-                progress.exception = html
-                progress.save()
+
+                try:
+                    progress = Progress.objects.get(pk=progress_id)
+                    exc_type, exc_value, exc_traceback = sys.exc_info()
+                    er = ExceptionReporter(None, exc_type, exc_value, exc_traceback)
+                    html = er.get_traceback_html()
+                    progress.exception = html
+                    progress.save()
+                except Progress.DoesNotExist as e:
+                    # Fallback to Python logger for when djprogress' error logging fails
+                    logger.exception(e)
             store_exception()
         raise
