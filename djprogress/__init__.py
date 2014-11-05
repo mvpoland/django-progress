@@ -141,19 +141,20 @@ def progress_error_reporter():
     except:
         if hasattr(tls, 'djprogress__stack'):
             from django.db import transaction
-            def store_exception():
-                progress_id = tls.djprogress__stack.pop()
-                from djprogress.models import Progress
 
-                try:
-                    progress = Progress.objects.get(pk=progress_id)
-                    exc_type, exc_value, exc_traceback = sys.exc_info()
-                    er = ExceptionReporter(None, exc_type, exc_value, exc_traceback)
-                    html = er.get_traceback_html()
-                    progress.exception = html
-                    progress.save()
-                except Progress.DoesNotExist as e:
-                    # Fallback to Python logger for when djprogress' error logging fails
-                    logger.exception(e)
-            store_exception()
+            progress_id = tls.djprogress__stack.pop()
+            from djprogress.models import Progress
+
+            try:
+                progress = Progress.objects.get(pk=progress_id)
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                er = ExceptionReporter(None, exc_type, exc_value, exc_traceback)
+                html = er.get_traceback_html()
+                progress.exception = html
+                progress.save()
+            except Exception as e:
+                # When the error reporter fails for whatever reason, catch and log the
+                # exception here so that our regular code flow isn't interrupted. The
+                # 'raise' statement will take care of the rest.
+                logger.exception(e)
         raise
