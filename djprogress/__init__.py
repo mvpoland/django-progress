@@ -139,12 +139,12 @@ def progress_error_reporter():
     try:
         yield
     except:
-        if hasattr(tls, 'djprogress__stack'):
-            from django.db import transaction
-            progress_id = tls.djprogress__stack.pop()
-
-            try:
+        try:
+            if hasattr(tls, 'djprogress__stack'):
+                from django.db import transaction
                 from djprogress.models import Progress
+
+                progress_id = tls.djprogress__stack.pop()
 
                 progress = Progress.objects.get(pk=progress_id)
                 exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -152,9 +152,9 @@ def progress_error_reporter():
                 html = er.get_traceback_html()
                 progress.exception = html
                 progress.save()
-            except Exception as e:
-                # When the error reporter fails for whatever reason, catch and log the
-                # exception here so that our regular code flow isn't interrupted. The
-                # 'raise' statement will take care of the rest.
-                logger.exception(e)
+        except Exception as e:
+            # When the error reporter fails for whatever reason, catch and log the
+            # exception here so that our regular code flow isn't interrupted. The
+            # 'raise' statement will take care of the rest.
+            logger.exception(e)
         raise
