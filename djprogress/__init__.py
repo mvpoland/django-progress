@@ -94,33 +94,36 @@ def with_progress(collection, name=None, count=-1):
     progress = Progress.objects.create(name=name, total=count, parent=parent_progress)
 
     tls.djprogress__stack.append(progress.pk)
-    for i, item in enumerate(collection):
-        yield item
 
-        ts = now()
+    try:
+        for i, item in enumerate(collection):
+            yield item
 
-        if i % 1000 == 0:
-            # After each block of 1000 items, retarget the estimation, to
-            # account for mid-term fluctuations.
-            start_ts = ts
-            items_since_retarget = 0
+            ts = now()
 
-        if (ts - last_updated).seconds > 5:
-            # After 5 seconds since last_updated, update the Progress instance
-            seconds_elapsed = (ts - start_ts).seconds
-            seconds_to_go = seconds_elapsed * float(count-i) / float(items_since_retarget+1)
-            eta = ts + datetime.timedelta(seconds=seconds_to_go)
+            if i % 1000 == 0:
+                # After each block of 1000 items, retarget the estimation, to
+                # account for mid-term fluctuations.
+                start_ts = ts
+                items_since_retarget = 0
 
-            progress.eta = eta
-            progress.current = i + 1
-            progress.save()
-            last_updated = ts
+            if (ts - last_updated).seconds > 5:
+                # After 5 seconds since last_updated, update the Progress instance
+                seconds_elapsed = (ts - start_ts).seconds
+                seconds_to_go = seconds_elapsed * float(count-i) / float(items_since_retarget+1)
+                eta = ts + datetime.timedelta(seconds=seconds_to_go)
 
-        items_since_retarget = items_since_retarget + 1
+                progress.eta = eta
+                progress.current = i + 1
+                progress.save()
+                last_updated = ts
 
-    progress.delete()
-    if tls.djprogress__stack:
-        tls.djprogress__stack.pop()
+            items_since_retarget = items_since_retarget + 1
+
+    finally:
+        progress.delete()
+        if tls.djprogress__stack:
+            tls.djprogress__stack.pop()
 
 
 @contextmanager
