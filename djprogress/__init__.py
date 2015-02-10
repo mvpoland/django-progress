@@ -141,22 +141,21 @@ def progress_error_reporter():
     """
     try:
         yield
-    except:
+    except Exception as exc_outer:
         try:
-            if hasattr(tls, 'djprogress__stack'):
+            if hasattr(tls, 'djprogress__stack') and tls.djprogress__stack:
                 from djprogress.models import Progress
 
                 progress_id = tls.djprogress__stack.pop()
-
                 progress = Progress.objects.get(pk=progress_id)
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 er = ExceptionReporter(None, exc_type, exc_value, exc_traceback)
                 html = er.get_traceback_html()
                 progress.exception = html
                 progress.save()
-        except Exception as e:
+        except Exception as exc_inner:
             # When the error reporter fails for whatever reason, catch and log the
             # exception here so that our regular code flow isn't interrupted. The
             # 'raise' statement will take care of the rest.
-            logger.exception(e)
-        raise
+            logger.exception(exc_inner)
+        raise exc_outer
