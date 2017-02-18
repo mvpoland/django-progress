@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 import djprogress
 
 setup(
-    name = "djprogress",
+    name = "django-progress",
     version = djprogress.__version__,
     url = 'http://github.com/citylive/django-progress',
     license = 'BSD',
