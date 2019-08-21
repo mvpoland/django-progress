@@ -7,3 +7,5 @@ local_settings.py
 *.egg-info
 dist
 .idea/
+*.iml
+*.sqlite3

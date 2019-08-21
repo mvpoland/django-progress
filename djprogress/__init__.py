@@ -1,7 +1,5 @@
 from contextlib import contextmanager
 import datetime
-import os
-import subprocess
 import sys
 
 from logging import getLogger
@@ -20,7 +18,7 @@ except ImportError:
     pass
 
 
-__version__ = '1.1.0'
+__version__ = '1.2.0'
 VERSION = __version__
 
 
@@ -28,7 +26,7 @@ class ProgressException(Exception):
     def __init__(self, description):
         self.description = description
 
-    def __unicode__(self):
+    def __str__(self):
         return self.description
 
 
@@ -61,7 +59,7 @@ def with_progress(collection, name=None, count=-1):
     last_updated = start_ts
     items_since_retarget = 0
 
-    ### Keep track of parent progresses using threading.local
+    # Keep track of parent progresses using threading.local
     if not hasattr(tls, 'djprogress__stack'):
         tls.djprogress__stack = []
     parent_progress = None

@@ -1,6 +1,5 @@
 {% extends "djprogress/base.html" %}
 {% load i18n %}
-{% load url from future %}
 {% block coltype %}colMS{% endblock %}
 {% block bodyclass %}dashboard{% endblock %}
 
@@ -79,7 +78,7 @@ $(function(){
                 <td><strong>{{ progress.current }} / {{ progress.total }}</strong></td>
                 <td>
                     <div style="width: 64px; border: 1px solid #CCC; margin: 0; padding: 0;">
-                         <div style="margin: 0; padding: 0; width: {% widthratio progress.current progress.total 64 %}px; height: 12px; background: #ACE url({{ STATIC_URL }}admin/img/admin/default-bg.gif) repeat-x;"></div>
+                         <div style="margin: 0; padding: 0; width: {% widthratio progress.current progress.total 64 %}px; height: 12px; repeat-x;"></div>
                     </div>
                 </td>
             </tr>
@@ -97,7 +96,7 @@ $(function(){
                 <td>{{ model.stats.0 }}%</td>
                 <td>
                     <div style="width: 256px; border: 1px solid #CCC; margin: 0; padding: 0;">
-                         <div style="margin: 0; padding: 0; width: {% widthratio model.stats.0 100 256 %}px; height: 12px; background: #ACE url({% admin_media_prefix %}img/admin/default-bg.gif) repeat-x;"></div>
+                         <div style="margin: 0; padding: 0; width: {% widthratio model.stats.0 100 256 %}px; height: 12px; repeat-x;"></div>
                     </div>
                 </td>
             </tr>

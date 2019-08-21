@@ -20,7 +20,13 @@ class Migration(migrations.Migration):
                 ('eta', models.DateTimeField(null=True, blank=True)),
                 ('last_updated', models.DateTimeField(auto_now=True, db_index=True)),
                 ('exception', models.TextField(blank=True)),
-                ('parent', models.ForeignKey(related_name='children', blank=True, to='djprogress.Progress', null=True)),
+                ('parent', models.ForeignKey(
+                    related_name='children',
+                    blank=True,
+                    to='djprogress.Progress',
+                    null=True,
+                    on_delete=models.CASCADE
+                )),
             ],
             options={
                 'verbose_name': 'progress',

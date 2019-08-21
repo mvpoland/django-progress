@@ -1,6 +1,8 @@
 from django.conf.urls import url
 
-from .views import api_get_progress, overview, resolve, show_exception
+from djprogress.views import api_get_progress, overview, resolve, show_exception
+
+app_name = "djprogress"
 
 urlpatterns = [
     url(r'^$', overview, name='djprogress_overview'),
